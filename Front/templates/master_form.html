@@ -1,0 +1,32 @@
+
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <title>Сервис бронирования</title>
+</head>
+<body>
+    <header>
+        {% include 'header.html' %} 
+    </header>
+    <main>
+        <form method="post">
+            <input type="text" name = "first_name" id = "first_name"><br>
+            <input type="text" name = "last_name" id = "last_name"><br>
+            <select name = "location_id" id = "location_id"><br>
+                {% for location in locations %}
+                <option value="{{location[0]}}">{{location[1]}}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" name = adress id="address"><br>
+        </form>
+    </main>
+    <footer>
+
+    </footer>
+</body>
+
+
+
+</html>
