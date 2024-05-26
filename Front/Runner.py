@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, json, flash
+from flask import Flask, render_template, request, redirect, json, flash, make_response
 import requests
 from datetime import datetime, timezone
 from flask_login import login_user
@@ -74,17 +74,17 @@ def create_master():
 @app.route('/login/', methods = ['GET', 'POST'])
 def view_login_page():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = json.loads(request.data)['email']
+        password = json.loads(request.data)['password']
 
         if email and password:
             response = requests.get('http://127.0.0.1:2000/api/login/', json = {"email" : email, "password" : password})
-            return response.json()
-            #if response.json()['answer'] == 'Неверный логин или пароль':
-            #    flash("Неверный логин или пароль")
-            #else:
-                #login_user(response['answer'])
-            #    return redirect('/')
+            
+            if response.status_code == 200:
+                text = response.text[1:-2]
+                return text
+            else:
+                flash('Неверный логин или пароль')
         else:
             flash('Введите данные')
 

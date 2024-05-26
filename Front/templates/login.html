@@ -20,17 +20,36 @@
                 </ul>
             {% endif %}
         {% endwith %}
-        <form method="post">
             
-            <p>Введите email</p>
-            <input type="email" name = "email" id = "email"><br>
+        <p>Введите email</p>
+        <input type="email" name = "email" id = "email"><br>
 
-            <p>Введите пароль</p>
-            <input type="password" name = "password" id = "password"><br>
+        <p>Введите пароль</p>
+        <input type="password" name = "password" id = "password"><br>
 
-            <a href ="/register/">Регистрация</a>
-            <input type="submit" value="Войти" name = submit id="submit"><br>
-        </form>
+        <a href ="/register/">Регистрация</a>
+        <button onclick="login()" value="Войти" name = submit id="submit">Войти<br>
+
     </main>
 </body>
+<script>
+    async function login(){
+        const email = document.querySelector("#email").value;
+        const password = document.querySelector("#password").value;
+        
+
+        const d = {
+            method: "POST",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({"email" : email, "password" : password}),
+        };
+
+        const jwt = await fetch('/login/', d).then(
+            (response) => response.text());
+
+        document.cookie = `jwt=${jwt};max-age=1800`;
+
+        window.location.replace('/')
+    }
+</script>
 </html>

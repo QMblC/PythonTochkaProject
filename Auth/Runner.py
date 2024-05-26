@@ -11,10 +11,11 @@ from App import app
 
 #Проверять наличие почты
 
-@app.route('/api/login/', methods = ['GET'])
+@app.route('/api/login/', methods = ['GET', 'POST'])
 def login():
-    email = request.json['email']
-    password = request.json['password']
+
+    email = json.loads(request.data)['email']
+    password = json.loads(request.data)['password']
 
     user = DbHandler.UserHandler.get_user_by_email(email)
 
@@ -30,15 +31,14 @@ def login():
             'exp' : datetime.now(timezone.utc) + timedelta(minutes = 30)
         }, app.config['SECRET_KEY'], algorithm = 'HS256')
         decoded = jwt.decode(token, key = app.config['SECRET_KEY'], algorithms = 'HS256')
-        a = jsonify({"token" : token})
+        a = json.jsonify(token)
         return a
        
     
     else:
         return make_response(
-        'Could not verify',
-        403,
-        {'WWW-Authenticate' : 'Basic realm ="Неправильный логин или пароль"'})
+        'Неверный логин или пароль',
+        403)
 
 @app.route('/api/register/', methods = ['POST'])
 def register():
@@ -50,12 +50,6 @@ def register():
     DbHandler.UserHandler.create_user(first_name, last_name, email, password)
     
     return 'a'
-
-@app.route('/api/test/')
-def test():
-    if current_user.is_authenticated:
-        return {"answer" : "yes"}
-    return {"answer" : "no"}
 
 @app.route('/api/logout/', methods = ['GET', 'POST'])
 @login_required
