@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <title>Сервис бронирования</title>
+</head>
+<body>
+    <header>
+        {% include 'header.html' %} 
+    </header>
+    <main>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <form method="post">
+            <p>Введите имя</p>
+            <input type="text" name = "first_name" id = "first_name"><br>
+            <p>Введите фамилию</p>
+            <input type="text" name = "last_name" id = "last_name"><br>
+            <p>Введите email</p>
+            <input type="email" name = "email" id = "email"><br>
+            <p>Введите пароль</p>
+            <input type="password" name = "password" id = "password"><br>
+            <p>Повторите пароль</p>
+            <input type="password" name = "password2" id = "password2"><br>
+            <a href ="/login/">Уже есть аккаунт?</a>
+            <input type="submit" value="Войти" name = submit id="submit"><br>
+        </form>
+    </main>
+</body>
+</html>

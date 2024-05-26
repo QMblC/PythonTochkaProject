@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, redirect, json
+from flask import Flask, render_template, request, redirect, json, flash
 import requests
 from datetime import datetime, timezone
+from flask_login import login_user
+from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
+app.secret_key = 'kdksa13ladjl'
 
 @app.route('/')
 def view_main_page():
@@ -67,6 +70,59 @@ def create_master():
     else:
         locations = requests.get('http://127.0.0.1:3000/api/get-locations/').json()
         return render_template("master_form.html", locations = locations)
+
+@app.route('/login/', methods = ['GET', 'POST'])
+def view_login_page():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if email and password:
+            response = requests.get('http://127.0.0.1:2000/api/login/', json = {"email" : email, "password" : password})
+            return response.json()
+            #if response.json()['answer'] == 'Неверный логин или пароль':
+            #    flash("Неверный логин или пароль")
+            #else:
+                #login_user(response['answer'])
+            #    return redirect('/')
+        else:
+            flash('Введите данные')
+
+    return render_template("login.html")
+
+@app.route('/register/', methods = ['GET', 'POST'])
+def view_register_page():
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        password1 = request.form['password']
+        password2 = request.form['password2']
+        if not (first_name and last_name and email and password1 and password2):
+            flash("Введите все данные")
+        elif password1 != password2:
+            flash("Пароли не совпадают")
+        else:
+            response = requests.post('http://127.0.0.1:2000/api/register/', json = {
+                "first_name" : first_name,
+                "last_name" : last_name,
+                "email" : email,
+                "password" : password1,
+            })
+
+            return redirect('/login/')
+    return render_template("register.html")
+
+@app.route('/logout/')
+def logout():
+    requests.get('http://127.0.0.1:2000/api/logout/')
+    return redirect('/')
+
+@app.route('/test/')
+def test():
+    a = requests.get('http://127.0.0.1:2000/api/test/').json()
+    return a['answer']
+
 
 if __name__ == '__main__':
     app.run(debug = True, port = 4000)
