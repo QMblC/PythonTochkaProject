@@ -5,10 +5,8 @@
     <title>Сервис бронирования</title>
     <link rel = "stylesheet" href="/static/css/location.css">
 </head>
-<body>
-    <header>
-        {% include 'header.html' %} 
-    </header>
+<body onload="function1()">
+    {% include 'header.html' %} 
     <main>
         <form method="post">
             <select name = "date" id = "date"><br>
@@ -35,6 +33,25 @@
 
     </footer>
 </body>
+<script>
+    async function function1() {
+    var ul = document.getElementById("header");
+    var li = document.createElement("li");
 
+    console.log(document.cookie)
+
+    if (!document.cookie.includes("jwt")) {
+        
+        li.innerHTML = `<a href="/login/">Вход</a>`;
+        ul.appendCshild(li);
+    }
+    else{
+        li.innerHTML = `
+        <a href="/logout/">Выйти</a>
+        `;
+        ul.appendChild(li);
+    }
+}
+</script>
 </html>
 

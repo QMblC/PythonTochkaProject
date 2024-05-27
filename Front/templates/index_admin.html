@@ -5,22 +5,15 @@
     <title>Сервис бронирования</title>
 </head>
 <body onload="function1()">
+
     {% include 'header.html' %} 
+    
     <main>
-        <div>
-            <p>Адреса</p>
-            <ul>
-                {% for location in locations %}
-                    <li><a href="/addresses/{{location[0]}}/">{{ location[1] }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
+        
     </main>
     <footer>
 
     </footer>
 </body>
-
 <script src = '../static/js/header.js'></script>
-
 </html>

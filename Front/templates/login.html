@@ -4,22 +4,13 @@
 <head>
     <title>Сервис бронирования</title>
 </head>
-<body>
-    <header>
-        {% include 'header.html' %} 
-    </header>
+<body onload="function1()">
+    {% include 'header.html' %} 
 
     <main>
         <h2>Вход в аккаунт</h2>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class=flashes>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+
+        <div id = "errors"></div>
             
         <p>Введите email</p>
         <input type="email" name = "email" id = "email"><br>
@@ -27,6 +18,9 @@
         <p>Введите пароль</p>
         <input type="password" name = "password" id = "password"><br>
 
+        <p>Запомнить пароль?</p>
+        <input type="checkbox" value="Запомнить пароль" name = "Запомнить пароль" id="remember"><br>
+        
         <a href ="/register/">Регистрация</a>
         <button onclick="login()" value="Войти" name = submit id="submit">Войти<br>
 
@@ -36,7 +30,12 @@
     async function login(){
         const email = document.querySelector("#email").value;
         const password = document.querySelector("#password").value;
+        const rememer =document.querySelector("#remember").value
         
+        if (!email || !password){
+            document.getElementById("errors").innerHTML = "Введите данные"
+            return
+        }
 
         const d = {
             method: "POST",
@@ -47,9 +46,22 @@
         const jwt = await fetch('/login/', d).then(
             (response) => response.text());
 
-        document.cookie = `jwt=${jwt};max-age=1800`;
-
-        window.location.replace('/')
+        if (jwt.split('.').length == 3){
+            if (rememer){
+                document.cookie = `jwt=${jwt};path=/;max-age=1800`;
+            }
+            else{
+                document.cookie = `jwt=${jwt};path=/`
+            }
+            window.location.replace('/')
+        }
+        else{
+            document.getElementById("errors").innerHTML = "Неверный логин или пароль"
+        }
     }
+        
+    
+
 </script>
+<script src = '../static/js/header.js'></script>
 </html>

@@ -1,11 +1,7 @@
 from flask import Flask, request, json, jsonify, make_response
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from flask_jwt_extended import JWTManager
-
-
-import os, jwt
+import jwt
 from datetime import datetime, timedelta, timezone
+
 from DbHandler import DbHandler
 from App import app
 
@@ -13,7 +9,7 @@ from App import app
 
 @app.route('/api/login/', methods = ['GET', 'POST'])
 def login():
-
+    
     email = json.loads(request.data)['email']
     password = json.loads(request.data)['password']
 
@@ -23,7 +19,7 @@ def login():
         return make_response(
         'Could not verify',
         403,
-        {'WWW-Authenticate' : 'Basic realm ="Неправильный логин или пароль"'})
+        )
     
     if user.is_password_correct(password):
         token = jwt.encode({
@@ -31,8 +27,8 @@ def login():
             'exp' : datetime.now(timezone.utc) + timedelta(minutes = 30)
         }, app.config['SECRET_KEY'], algorithm = 'HS256')
         decoded = jwt.decode(token, key = app.config['SECRET_KEY'], algorithms = 'HS256')
-        a = json.jsonify(token)
-        return a
+
+        return json.jsonify(token)
        
     
     else:
@@ -47,14 +43,27 @@ def register():
     email = request.json['email']
     password = request.json['password']
 
+    user = DbHandler.UserHandler.get_user_by_email(email)
+    if user:
+        make_response(
+            'Указанная почта уже используется',
+            400
+        )
+
     DbHandler.UserHandler.create_user(first_name, last_name, email, password)
+    user = DbHandler.UserHandler.get_user_by_email(email)
+    token = jwt.encode({
+            'public_id': user.id,
+            'exp' : datetime.now(timezone.utc) + timedelta(minutes = 30)
+        }, app.config['SECRET_KEY'], algorithm = 'HS256')
     
-    return 'a'
+    decoded = jwt.decode(token, key = app.config['SECRET_KEY'], algorithms = 'HS256')
+
+    return json.jsonify(token)
 
 @app.route('/api/logout/', methods = ['GET', 'POST'])
-@login_required
 def logout():
-    logout_user()
+    pass
 
 if __name__ == "__main__":
     app.run(debug=True, port=2000)

@@ -73,6 +73,7 @@ def create_master():
 
 @app.route('/login/', methods = ['GET', 'POST'])
 def view_login_page():
+
     if request.method == 'POST':
         email = json.loads(request.data)['email']
         password = json.loads(request.data)['password']
@@ -84,20 +85,26 @@ def view_login_page():
                 text = response.text[1:-2]
                 return text
             else:
-                flash('Неверный логин или пароль')
+                return make_response(
+                    'Enter data',
+                    403
+                )
         else:
-            flash('Введите данные')
+            return make_response(
+                'Login or password is incorrect',
+                400,
+            )
 
     return render_template("login.html")
 
 @app.route('/register/', methods = ['GET', 'POST'])
 def view_register_page():
     if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        password1 = request.form['password']
-        password2 = request.form['password2']
+        first_name = request.json['first_name']
+        last_name = request.json['last_name']
+        email = request.json['email']
+        password1 = request.json['password']
+        password2 = request.json['password2']
         if not (first_name and last_name and email and password1 and password2):
             flash("Введите все данные")
         elif password1 != password2:
@@ -110,7 +117,14 @@ def view_register_page():
                 "password" : password1,
             })
 
-            return redirect('/login/')
+            if response.status_code == 200:
+                text = response.text[1:-2]
+                return text
+            else:
+                return make_response(
+                    'Enter data',
+                    403
+                )
     return render_template("register.html")
 
 @app.route('/logout/')

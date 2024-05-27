@@ -4,34 +4,66 @@
 <head>
     <title>Сервис бронирования</title>
 </head>
-<body>
-    <header>
-        {% include 'header.html' %} 
-    </header>
+<body onload="function1()">
+    {% include 'header.html' %} 
     <main>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class=flashes>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-        <form method="post">
-            <p>Введите имя</p>
-            <input type="text" name = "first_name" id = "first_name"><br>
-            <p>Введите фамилию</p>
-            <input type="text" name = "last_name" id = "last_name"><br>
-            <p>Введите email</p>
-            <input type="email" name = "email" id = "email"><br>
-            <p>Введите пароль</p>
-            <input type="password" name = "password" id = "password"><br>
-            <p>Повторите пароль</p>
-            <input type="password" name = "password2" id = "password2"><br>
-            <a href ="/login/">Уже есть аккаунт?</a>
-            <input type="submit" value="Войти" name = submit id="submit"><br>
-        </form>
+        <div id = "errors"></div>
+        <p>Введите имя</p>
+        <input type="text" name = "first_name" id = "first_name"><br>
+
+        <p>Введите фамилию</p>
+        <input type="text" name = "last_name" id = "last_name"><br>
+
+        <p>Введите email</p>
+        <input type="email" name = "email" id = "email"><br>
+
+        <p>Введите пароль</p>
+        <input type="password" name = "password" id = "password"><br>
+
+        <p>Повторите пароль</p>
+        <input type="password" name = "password2" id = "password2"><br>
+
+        <button onclick="register()" value="Войти" name = submit id="submit">Войти<br>
     </main>
 </body>
+<script src = '../static/js/header.js'></script>
+<script>
+    async function register(){
+        const email = document.querySelector("#email").value;
+        const password1 = document.querySelector("#password").value;
+        const password2 = document.querySelector("#password2").value;
+        const first_name = document.querySelector("#first_name").value;
+        const last_name = document.querySelector("#last_name").value;
+        
+        if (!email || !password ||!first_name || !last_name){
+            document.getElementById("errors").innerHTML = "Введите данные"
+            return
+        }
+        else if (password1 != password2){
+            document.getElementById("errors").innerHTML = "Пароли не совпадают"
+            return
+        }
+
+        const d = {
+            method: "POST",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({"email" : email,
+                "password" : password1,
+                "password2" : password2,
+                "first_name" : first_name,
+                "last_name" : last_name}),
+        };
+
+        const jwt = await fetch('/register/', d).then(
+            (response) => response.text());
+
+        if (jwt.split('.').length == 3){
+            document.cookie = `jwt=${jwt};path=/`
+            window.location.replace("/")
+        }
+        else{
+            document.getElementById("errors").innerHTML = "При регистрации произошла ошибка"
+        }
+    }
+</script>
 </html>
