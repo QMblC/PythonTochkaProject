@@ -47,6 +47,7 @@ class DbHandler:
 
     class SlotHandler:
 
+        @staticmethod
         def get_master_slots(person, dt: datetime):
 
             a = db.session.query(SlotDb).filter(SlotDb.master_id == person['master_id']).all()
@@ -54,7 +55,15 @@ class DbHandler:
             person_slots = [{"id" : x.id, "type" : x.slot_type, "booked_by" : x.booked_by, "time" : x.time} for x in a if x.time.day == dt.day and x.time.month == dt.month]
 
             return person, person_slots
-                
+        
+        @staticmethod
+        def delete_slots(id):
+            slots = db.session.query(SlotDb).filter(SlotDb.master_id == id).all()
+
+            for slot in slots:
+                db.session.delete(slot)
+
+            db.session.commit()   
                 
 
         @staticmethod

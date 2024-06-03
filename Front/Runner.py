@@ -68,6 +68,8 @@ def delete(id: int):
     except:
         return 'При удалении  произошла ошибка!'
 
+
+
 @app.route('/login/', methods = ['GET', 'POST'])
 def view_login_page():
 

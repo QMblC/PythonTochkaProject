@@ -53,6 +53,21 @@ def create_slots():
             500
     )
 
+@app.route('/api/delete-slots/', methods = ['DELETE'])
+def delete_slots():
+    try:
+        master_id = request.json['master_id']
+        DbHandler.SlotHandler.delete_slots(master_id)
+        return make_response(
+            'Слоты созданы',
+            200
+            )
+    except:
+        return make_response(
+            'Произошла непредвиденная ошибка',
+            500
+        )
+
 @app.route('/api/get-slots/', methods = ['POST', 'GET'])
 def get_master_slots():
     js = request.json

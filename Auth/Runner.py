@@ -87,11 +87,11 @@ def change_user_status():
         masters = DbHandler.MasterHandler.get_master_by_location(location_id)
 
         response = requests.post('http://127.0.0.1:3000/api/create-clots/', json = {"master_id" : master.master_id})
-        a = 1
 
     elif new_status == 'user':
 
         DbHandler.MasterHandler.delete_master(user_id)#Удалить слоты
+        requests.delete('http://127.0.0.1:3000/api/delete-slots/', json = {"master_id" : user.id})
 
     elif new_status == 'admin':
         pass
