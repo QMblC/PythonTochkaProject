@@ -1,5 +1,5 @@
 from flask import Flask, request, json, jsonify, make_response
-import jwt
+import jwt, requests
 from datetime import datetime, timedelta, timezone
 
 from DbHandler import DbHandler
@@ -61,9 +61,80 @@ def register():
 
     return json.jsonify(token)
 
-@app.route('/api/logout/', methods = ['GET', 'POST'])
-def logout():
-    pass
+@app.route('/api/change-user-status/')
+
+def change_user_status():
+
+    new_status = request.json['status']
+    user_id = request.json['user_id']
+
+    user = DbHandler.UserHandler.get_user(user_id)
+
+    if user == None:
+        return make_response(
+            'Пользователя не существует, или вы пытаетесь изменить статус администратора',
+            400
+        )
+    
+
+    if new_status == 'master':
+        
+        location_id = request.json['location_id']
+
+        DbHandler.MasterHandler.create_master(user.id, location_id)#Создать слоты
+        master = DbHandler.MasterHandler.get_master(user_id)
+
+        masters = DbHandler.MasterHandler.get_master_by_location(location_id)
+
+        response = requests.post('http://127.0.0.1:3000/api/create-clots/', json = {"master_id" : master.master_id})
+        a = 1
+
+    elif new_status == 'user':
+
+        DbHandler.MasterHandler.delete_master(user_id)#Удалить слоты
+
+    elif new_status == 'admin':
+        pass
+
+@app.route('/api/get-masters/<int:location_id>')
+def get_masters(location_id: int):
+    users = []
+    masters = DbHandler.MasterHandler.get_master_by_location(location_id)
+
+    for i in range(len(masters)):
+        user = DbHandler.UserHandler.get_user(masters[i].user_id)
+        users.append({"master_id" : masters[i].master_id,
+            "first_name" : user.first_name,
+            "last_name" : user.last_name,
+            "location_id" : location_id})
+
+    return users
+
+    
+
+@app.route('/api/validate-token/')
+def validate_jwt():
+    admins = [1]
+    json_token = request.json['jwt'][4:]
+
+    try:
+        js = jwt.decode(json_token, app.config['SECRET_KEY'], algorithms = 'HS256')
+        if js['public_id'] in admins:
+            return make_response(
+                'admin',
+                200
+            )
+        else:
+            return make_response(
+                'Нет доступа',
+                401
+            )
+    except:
+        return make_response(
+            'Некорректный токен',
+            400
+        )
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=2000)

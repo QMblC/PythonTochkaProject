@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <title>Сервис бронирования</title>
+</head>
+<body onload="function1()">
+
+    {% include 'header.html' %} 
+    
+    <main>
+        <div>
+            <input type="text" name = "user_id" id = "user_id"><br>
+            <select name="status" id="status">
+                <option value="user">Посетитель</option>
+                <option value="master">Парикмахер</option>
+                <option value="admin">Администратор</option>
+            </select>
+            <select name = "location_id" id = "location_id"><br>
+                {% for location in locations %}
+                    <option value="{{location[0]}}">{{location[1]}}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+        
+        <button onclick="send_data()"  name = "change" id="change">Изменить</button><br>
+    </main>
+    <footer>
+
+    </footer>
+</body>
+<script>
+
+async function function1() {
+    var ul = document.getElementById("header");
+    var li = document.createElement("li");
+
+    if (!document.cookie.includes("jwt")) {
+        
+        li.innerHTML = `<a href="/login/">Вход</a>`;
+        ul.appendChild(li);
+    }
+    else{
+        li.innerHTML = `
+        <a href="javascript:logout();">Выйти</a>
+        `;
+        ul.appendChild(li);
+    }
+}
+
+function logout(){
+    let newCookie = "";
+    let split = document.cookie.split(';');
+    for(var i = 0; i < split.length; i++){
+        console.log(newCookie);
+        if (split[i].includes("jwt=")){
+            newCookie += split[i] + ";max-age=-1;";
+        }
+        else{
+            newCookie += split[i];
+        }
+    }
+    document.cookie = newCookie;
+    console.log(document.cookie);
+
+    location.reload()
+}
+
+    async function function1() {
+        var ul = document.getElementById("header");
+        var li = document.createElement("li");
+
+        if (!document.cookie.includes("jwt")) {
+            
+            li.innerHTML = `<a href="/login/">Вход</a>`;
+            ul.appendChild(li);
+        }
+        else{
+            li.innerHTML = `
+            <a href="javascript:logout();">Выйти</a>
+            `;
+            ul.appendChild(li);
+        }
+}
+
+    window.onload = async function(){
+        console.log(0)
+        const d = {
+            method: "POST",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({"jwt" : document.cookie}),
+        };
+        console.log(1)
+        const status = await fetch('/api/validate/', d).then(
+            (response) => response.text()
+        )
+        console.log(2)
+        if (status != 200){
+            window.location.replace('/')
+        }
+    }
+
+    function send_data() {
+        const user_id = document.querySelector("#user_id").value;
+        const status = document.querySelector("#status").value;
+        const location_id = document.querySelector("#location_id").value
+
+        const data = {
+            method: "POST",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({"user_id" : user_id, "status" : status, "location_id" : location_id}),
+        };
+
+        const r = fetch('/api/change-status/', data)
+    }
+</script>
+</html>

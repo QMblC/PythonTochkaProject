@@ -39,7 +39,7 @@ class DbHandler:
 
             master_id = MasterDb.query.all()[-1].id
 
-            DbHandler.SlotHandler.add_slot(master_id)
+            DbHandler.SlotHandler.add_slots(master_id)
         
         @staticmethod
         def get_master_by_location(id: int):
@@ -47,22 +47,18 @@ class DbHandler:
 
     class SlotHandler:
 
-        def get_master_slots(person: MasterDb, dt: datetime):
+        def get_master_slots(person, dt: datetime):
 
-            a = db.session.query(SlotDb).filter(SlotDb.master_id == person.id).all()
+            a = db.session.query(SlotDb).filter(SlotDb.master_id == person['master_id']).all()
 
             person_slots = [{"id" : x.id, "type" : x.slot_type, "booked_by" : x.booked_by, "time" : x.time} for x in a if x.time.day == dt.day and x.time.month == dt.month]
 
-
-            return {"id":person.id,
-                    "first_name" : person.first_name,
-                    "last_name" : person.last_name,
-                    "location_id" : person.location_id}, person_slots
+            return person, person_slots
                 
                 
 
         @staticmethod
-        def add_slot(master_id: int):
+        def add_slots(master_id: int):
             dt = datetime.now(timezone.utc)
             start_dt = datetime(dt.year, dt.month, dt.day, 9, 0, 0)
 
@@ -83,6 +79,9 @@ class DbHandler:
                         else:
                             new_dt = datetime(new_dt.year, new_dt.month + 1, 1, 9, 0, 0)
                     else:
-                        new_dt = datetime(new_dt.year, new_dt.month, new_dt.day + 1, 9, 0, 0)
+                        try:
+                            new_dt = datetime(new_dt.year, new_dt.month, new_dt.day + 1, 9, 0, 0)
+                        except:
+                            new_dt = datetime(new_dt.year, new_dt.month + 1, 1, 9, 0, 0)
                     
             db.session.commit()

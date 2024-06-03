@@ -60,8 +60,11 @@
         }
     }
         
-    
-
+    window.onload = function(){
+        if (document.cookie.includes("jwt")) {
+            window.location.replace('/')
+        }
+    }
 </script>
 <script src = '../static/js/header.js'></script>
 </html>

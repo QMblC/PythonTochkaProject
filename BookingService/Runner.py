@@ -1,5 +1,5 @@
 from App import app
-from flask import request, redirect, json, Response
+from flask import request, redirect, json, Response, make_response
 from DbHandler import DbHandler
 from TimeHandler import TimeHandler
 import requests
@@ -33,18 +33,34 @@ def get_next_two_weeks():
 
 @app.route('/api/create-master/', methods = ['POST'])
 def create_master():
+    
     DbHandler.MasterHandler.add_master(request.json["first_name"], request.json["last_name"], request.json["location_id"])
 
     return "a"
 
-@app.route('/api/get-master-slots/<int:id>', methods = ['POST', 'GET'])
-def get_master_slots(id: int):
+@app.route('/api/create-clots/', methods = ['POST'])
+def create_slots():
+    try:
+        master_id = request.json['master_id']
+        DbHandler.SlotHandler.add_slots(master_id)
+        return make_response(
+            'Слоты созданы',
+            200
+            )
+    except:
+        return make_response(
+            'Произошла непредвиденная ошибка',
+            500
+    )
+
+@app.route('/api/get-slots/', methods = ['POST', 'GET'])
+def get_master_slots():
     js = request.json
     dt = datetime(js["year"], js["month"], js["day"], js["hour"], js["minute"], js["second"])
 
     masters = []
 
-    people = DbHandler.MasterHandler.get_master_by_location(id)
+    people = js['masters']
 
     for person in people:
         masters.append(DbHandler.SlotHandler.get_master_slots(person, dt))

@@ -1,4 +1,4 @@
-from App import db, login_manager
+from App import db
 
 from DbModels import UserDb, MasterDb, AdminDb
 
@@ -7,7 +7,6 @@ class DbHandler:
     class UserHandler:
 
         @staticmethod
-        @login_manager.user_loader
         def get_user(id: int):
             return db.session.query(UserDb).get(id)
         
@@ -23,4 +22,38 @@ class DbHandler:
             db.session.add(new_user)
             db.session.commit()
 
-            print(new_user.first_name, new_user.last_name, new_user.email, new_user.password)
+        @staticmethod
+        def delete_user(id):
+            user = UserDb.query.get_or_404(id)
+
+            db.session.delete(user)
+            db.session.commit()
+
+    class MasterHandler:
+        @staticmethod
+        def get_master(id: int) -> MasterDb:
+            return db.session.query(MasterDb).get(id)
+        
+        @staticmethod
+        def get_master_by_email(email: str):
+            return db.session.query(UserDb).filter(UserDb.email == email).first()
+        
+        @staticmethod
+        def get_master_by_location(location_id: int):
+            masters = db.session.query(MasterDb).filter(MasterDb.location_id == int(location_id)).all()
+            return masters
+        
+        @staticmethod
+        def create_master(user_id: int, location_id: int):
+            new_master = MasterDb(user_id = user_id,
+                location_id = location_id)
+            
+            db.session.add(new_master)
+            db.session.commit()
+
+        @staticmethod
+        def delete_master(id: int):
+            master = MasterDb.query.get_or_404(id)
+
+            db.session.delete(master)
+            db.session.commit()

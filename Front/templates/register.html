@@ -65,5 +65,11 @@
             document.getElementById("errors").innerHTML = "При регистрации произошла ошибка"
         }
     }
+
+    window.onload = function(){
+        if (document.cookie.includes("jwt")) {
+            window.location.replace('/')
+        }
+    }
 </script>
 </html>

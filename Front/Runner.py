@@ -16,21 +16,35 @@ def view_addresses():
     locations = requests.get('http://127.0.0.1:3000/api/get-locations/').json()
     return render_template("addresses.html", locations = locations)
 
-@app.route('/addresses/<int:id>/', methods = ['GET', 'POST'])
-def view_location_page(id: int):
+@app.route('/api/get-addresses/')
+def get_addresses():
+    return requests.get('http://127.0.0.1:3000/api/get-locations/').json()
+
+@app.route('/addresses/<int:location_id>/', methods = ['GET', 'POST'])
+def view_location_page(location_id: int):
 
     if request == 'POST':
         dt = requests.get('http://127.0.0.1:3000/api/get-dt/', json = {"dt" : request.form["date"].split('.')}).json()
     else:
         dt = datetime.now(timezone.utc)
 
-    days = requests.get('http://127.0.0.1:3000/api/timetable-day-options/', json = {"year" : dt.year,\
+    days = requests.get('http://127.0.0.1:3000/api/timetable-day-options/', json = {"year" : dt.year,
         "month" : dt.month, "day" : dt.day, "hour" : dt.hour, "minute": dt.minute, "second" : dt.second}).json()
     
-    masters = requests.post(f'http://127.0.0.1:3000/api/get-master-slots/{id}', json = {"year" : dt.year,\
-        "month" : dt.month, "day" : dt.day, "hour" : dt.hour, "minute": dt.minute, "second" : dt.second}).json()
+    #Получение мастеров-людей
+    #Получение слотов
 
-    return render_template('location.html', masters = masters, days = days)
+    masters = requests.get(f'http://127.0.0.1:2000/api/get-masters/{location_id}').json()
+
+    slots = requests.get('http://127.0.0.1:3000/api/get-slots/', json={"masters" : masters,
+        "year" : dt.year,
+        "month" : dt.month,
+        "day" : dt.day,
+        "hour" : dt.hour, 
+        "minute": dt.minute, 
+        "second" : dt.second}).json()
+
+    return render_template('location.html', masters = slots, days = days)
 
 @app.route('/create-location/', methods = ['POST', 'GET'])
 def view_create_location():
@@ -53,23 +67,6 @@ def delete(id: int):
         return redirect('/addresses/')
     except:
         return 'При удалении  произошла ошибка!'
-    
-@app.route('/create-master/', methods = ['POST', 'GET'])
-def create_master():
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        location_id = request.form['location_id']
-
-        try:
-            
-            requests.post('http://127.0.0.1:3000/api/create-master/', json = {"first_name" : first_name, "last_name" : last_name, "location_id" : location_id})
-            return redirect('/addresses/')
-        except:
-            return "Возникла непредвиденная ошибка!"
-    else:
-        locations = requests.get('http://127.0.0.1:3000/api/get-locations/').json()
-        return render_template("master_form.html", locations = locations)
 
 @app.route('/login/', methods = ['GET', 'POST'])
 def view_login_page():
@@ -132,11 +129,29 @@ def logout():
     requests.get('http://127.0.0.1:2000/api/logout/')
     return redirect('/')
 
-@app.route('/test/')
-def test():
-    a = requests.get('http://127.0.0.1:2000/api/test/').json()
-    return a['answer']
+@app.route('/change-status/')
+def view_status_page():
+    locations = requests.get('http://127.0.0.1:3000/api/get-locations/')
+    return render_template("change_user_status.html", locations = locations.json())
 
+@app.route('/api/change-status/', methods = ['POST'])
+def change_status():
+    user_id = request.json['user_id']
+    status = request.json['status']
+    location_id = request.json['location_id']
+
+    requests.get('http://127.0.0.1:2000/api/change-user-status/', json = {"user_id" : user_id,
+        "status" : status,
+        "location_id" : location_id})
+
+@app.route('/api/validate/', methods = ['POST'])
+def validate():
+    jwt =request.json['jwt']
+    response = requests.get('http://127.0.0.1:2000/api/validate-token/', json={"jwt" : jwt})
+    if response.status_code == 200:
+        return json.jsonify(200)
+    else:
+        return json.jsonify(401)
 
 if __name__ == '__main__':
     app.run(debug = True, port = 4000)

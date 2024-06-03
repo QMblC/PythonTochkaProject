@@ -21,9 +21,9 @@
         <table>
             <tr><th>Master</th><th>9:00</th><th>9:30</th><th>10:00</th><th>10:30</th><th>11:00</th><th>11:30</th><th>12:00</th><th>12:30</th><th>13:00</th><th>13:30</th><th>14:00</th><th>14:30</th><th>15:00</th><th>15:30</th><th>16:00</th><th>16:30</th><th>17:00</th><th>17:30</th><th>18:00</th><th>18:30</th><th>19:00</th><th>19:30</th></tr>
             {% for master in masters %}
-                <tr><th>{{ master[0].first_name + " " + master[0].last_name }}</th>
+                <tr><th>{{ master[0]['first_name'] + " " + master[0]['last_name'] }}</th>
                     {% for slot in master[1] %}
-                    <th><a href="/addresses/{{master[0].location_id}}/book/{{slot.id}}">{{slot.type}}</a></th>
+                    <th><a href="/addresses/{{master[0]['location_id']}}/book/{{slot['id']}}">{{slot['type']}}</a></th>
                     {% endfor %}
                 </tr>
             {% endfor %}
