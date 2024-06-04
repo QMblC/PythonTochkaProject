@@ -84,7 +84,13 @@ def get_master_slots():
 
 @app.route('/api/get-dt/')
 def get_dt():
-    return TimeHandler.array_to_date(request.json["dt"])
+    dt = TimeHandler.array_to_date(request.json["dt"])
+    return {"year" : dt.year,
+        "month" : dt.month,
+        "day" : dt.day,
+        "hour" : dt.hour,
+        "minute" : dt.minute,
+        "second" : dt.second}
 
 if __name__ == '__main__':
     app.run(debug = True, port = 3000)

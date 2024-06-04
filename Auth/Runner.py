@@ -80,13 +80,18 @@ def change_user_status():
     if new_status == 'master':
         
         location_id = request.json['location_id']
-
-        DbHandler.MasterHandler.create_master(user.id, location_id)#Создать слоты
-        master = DbHandler.MasterHandler.get_master(user_id)
+        if DbHandler.MasterHandler.get_master(user_id) != None:
+            return make_response(
+                'Пользователь уже является парикмахером',
+                500
+            )
+        DbHandler.MasterHandler.create_master(user.id, location_id)
+        master = DbHandler.MasterHandler.get_master_by_global(user_id)
 
         masters = DbHandler.MasterHandler.get_master_by_location(location_id)
 
         response = requests.post('http://127.0.0.1:3000/api/create-clots/', json = {"master_id" : master.master_id})
+        pass
 
     elif new_status == 'user':
 

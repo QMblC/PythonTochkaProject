@@ -22,6 +22,7 @@ class SlotDb(db.Model):
     booked_by = db.Column(db.Integer)
     slot_type = db.Column(db.String(20), nullable = False)
     time = db.Column(db.DateTime, nullable = False)
+    location_id = db.Column(db.Integer, nullable = False)
 
     def __repr__(self):
         return '<Slot %r>' % self.id

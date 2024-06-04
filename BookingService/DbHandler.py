@@ -79,7 +79,7 @@ class DbHandler:
                             hrs = 0
                         else:
                             hrs = 1
-                        slot = SlotDb(master_id = master_id, booked_by = None, slot_type = "empty", time = new_dt)
+                        slot = SlotDb(master_id = master_id, booked_by = None, slot_type = "Свободно", time = new_dt)
                         db.session.add(slot)
                         new_dt = datetime(new_dt.year, new_dt.month, new_dt.day, new_dt.hour + hrs, (new_dt.minute + 30) % 60, new_dt.second)
                     if new_dt.day == new_dt.max.day:
@@ -94,3 +94,5 @@ class DbHandler:
                             new_dt = datetime(new_dt.year, new_dt.month + 1, 1, 9, 0, 0)
                     
             db.session.commit()
+            vs = db.session.query(SlotDb).all()
+            pass

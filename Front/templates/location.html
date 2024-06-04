@@ -23,7 +23,7 @@
             {% for master in masters %}
                 <tr><th>{{ master[0]['first_name'] + " " + master[0]['last_name'] }}</th>
                     {% for slot in master[1] %}
-                    <th><a href="/addresses/{{master[0]['location_id']}}/book/{{slot['id']}}">{{slot['type']}}</a></th>
+                    <th><a href="/booking/{{slot['id']}}">{{slot['type']}}</a></th>
                     {% endfor %}
                 </tr>
             {% endfor %}

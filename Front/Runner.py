@@ -23,8 +23,9 @@ def get_addresses():
 @app.route('/addresses/<int:location_id>/', methods = ['GET', 'POST'])
 def view_location_page(location_id: int):
 
-    if request == 'POST':
-        dt = requests.get('http://127.0.0.1:3000/api/get-dt/', json = {"dt" : request.form["date"].split('.')}).json()
+    if request.method == 'POST':
+        dt_json = requests.get('http://127.0.0.1:3000/api/get-dt/', json = {"dt" : request.form["date"].split('.')}).json()
+        dt = datetime(dt_json['year'], dt_json['month'], dt_json['day'], dt_json['hour'], dt_json['minute'], dt_json['second'])
     else:
         dt = datetime.now(timezone.utc)
 
@@ -154,6 +155,10 @@ def validate():
         return json.jsonify(200)
     else:
         return json.jsonify(401)
+    
+@app.route('/booking/<int:slot_id>/')
+def view_booking_page(slot_id: int):
+    return render_template('booking.html')
 
 if __name__ == '__main__':
     app.run(debug = True, port = 4000)

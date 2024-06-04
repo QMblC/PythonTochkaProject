@@ -31,8 +31,12 @@ class DbHandler:
 
     class MasterHandler:
         @staticmethod
-        def get_master(id: int) -> MasterDb:
-            return db.session.query(MasterDb).get(id)
+        def get_master(master_id: int) -> MasterDb:
+            a = db.session.query(MasterDb).get(master_id)
+            return a
+        
+        def get_master_by_global(id: int):
+            return db.session.query(MasterDb).filter(MasterDb.user_id == id).first()
         
         @staticmethod
         def get_master_by_email(email: str):
@@ -52,8 +56,8 @@ class DbHandler:
             db.session.commit()
 
         @staticmethod
-        def delete_master(id: int):
-            master = MasterDb.query.get_or_404(id)
+        def delete_master(user_id: int):
+            master = MasterDb.query.filter(user_id == MasterDb.user_id).first()
 
             db.session.delete(master)
             db.session.commit()
