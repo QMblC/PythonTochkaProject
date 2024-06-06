@@ -1,5 +1,5 @@
 from App import db
-from DbModels import SlotDb, MasterDb, LocationDb
+from DbModels import SlotDb, LocationDb
 from flask import json
 
 from datetime import datetime, timezone
@@ -13,6 +13,10 @@ class DbHandler:
 
             db.session.add(location)
             db.session.commit()
+
+        @staticmethod
+        def get_location(location_id) -> LocationDb:
+            return db.session.query(LocationDb).get(location_id)   
 
         @staticmethod
         def get_locations():
@@ -29,22 +33,6 @@ class DbHandler:
             db.session.delete(location)
             db.session.commit()
 
-    class MasterHandler:
-        @staticmethod
-        def add_master(first_name: str, last_name: str, location_id: int):
-            master = MasterDb(first_name = first_name, last_name = last_name, location_id = location_id)
-
-            db.session.add(master)
-            db.session.commit()
-
-            master_id = MasterDb.query.all()[-1].id
-
-            DbHandler.SlotHandler.add_slots(master_id)
-        
-        @staticmethod
-        def get_master_by_location(id: int):
-            return db.session.query(MasterDb).filter(MasterDb.location_id == int(id)).all()
-
     class SlotHandler:
 
         @staticmethod
@@ -57,17 +45,22 @@ class DbHandler:
             return person, person_slots
         
         @staticmethod
-        def delete_slots(id):
-            slots = db.session.query(SlotDb).filter(SlotDb.master_id == id).all()
+        def delete_slots(master_id):
+            slots = db.session.query(SlotDb).filter(SlotDb.master_id == master_id).all()
 
             for slot in slots:
                 db.session.delete(slot)
 
-            db.session.commit()   
-                
+            db.session.commit()
+            vs = db.session.query(SlotDb).filter(SlotDb.master_id == master_id).all()
+            pass
 
         @staticmethod
-        def add_slots(master_id: int):
+        def get_slot(slot_id: int) -> SlotDb:
+            return db.session.query(SlotDb).get(slot_id)        
+
+        @staticmethod
+        def add_slots(master_id: int, location_id: int):
             dt = datetime.now(timezone.utc)
             start_dt = datetime(dt.year, dt.month, dt.day, 9, 0, 0)
 
@@ -79,7 +72,7 @@ class DbHandler:
                             hrs = 0
                         else:
                             hrs = 1
-                        slot = SlotDb(master_id = master_id, booked_by = None, slot_type = "Свободно", time = new_dt)
+                        slot = SlotDb(master_id = master_id, booked_by = None, slot_type = "Свободно", time = new_dt, location_id = location_id)
                         db.session.add(slot)
                         new_dt = datetime(new_dt.year, new_dt.month, new_dt.day, new_dt.hour + hrs, (new_dt.minute + 30) % 60, new_dt.second)
                     if new_dt.day == new_dt.max.day:
@@ -94,5 +87,3 @@ class DbHandler:
                             new_dt = datetime(new_dt.year, new_dt.month + 1, 1, 9, 0, 0)
                     
             db.session.commit()
-            vs = db.session.query(SlotDb).all()
-            pass

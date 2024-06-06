@@ -23,7 +23,7 @@ def login():
     
     if user.is_password_correct(password):
         token = jwt.encode({
-            'public_id': user.id,
+            'id': user.id,
             'exp' : datetime.now(timezone.utc) + timedelta(minutes = 30)
         }, app.config['SECRET_KEY'], algorithm = 'HS256')
         decoded = jwt.decode(token, key = app.config['SECRET_KEY'], algorithms = 'HS256')
@@ -53,7 +53,7 @@ def register():
     DbHandler.UserHandler.create_user(first_name, last_name, email, password)
     user = DbHandler.UserHandler.get_user_by_email(email)
     token = jwt.encode({
-            'public_id': user.id,
+            'id': user.id,
             'exp' : datetime.now(timezone.utc) + timedelta(minutes = 30)
         }, app.config['SECRET_KEY'], algorithm = 'HS256')
     
@@ -80,7 +80,8 @@ def change_user_status():
     if new_status == 'master':
         
         location_id = request.json['location_id']
-        if DbHandler.MasterHandler.get_master(user_id) != None:
+
+        if DbHandler.MasterHandler.contains(user_id):
             return make_response(
                 'Пользователь уже является парикмахером',
                 500
@@ -90,13 +91,13 @@ def change_user_status():
 
         masters = DbHandler.MasterHandler.get_master_by_location(location_id)
 
-        response = requests.post('http://127.0.0.1:3000/api/create-clots/', json = {"master_id" : master.master_id})
+        response = requests.post('http://127.0.0.1:3000/api/create-clots/', json = {"master_id" : master.master_id, "location_id" : location_id})
         pass
 
     elif new_status == 'user':
 
-        DbHandler.MasterHandler.delete_master(user_id)#Удалить слоты
-        requests.delete('http://127.0.0.1:3000/api/delete-slots/', json = {"master_id" : user.id})
+        master_id = DbHandler.MasterHandler.delete_master(user_id)#Удалить слоты
+        requests.delete('http://127.0.0.1:3000/api/delete-slots/', json = {"master_id" : master_id})
 
     elif new_status == 'admin':
         pass
@@ -115,16 +116,44 @@ def get_masters(location_id: int):
 
     return users
 
-    
+def decode_token(json_token: str):
+    js = jwt.decode(json_token, app.config['SECRET_KEY'], algorithms = 'HS256')
+    user = DbHandler.UserHandler.get_user(int(js['id']))
+    return user
 
-@app.route('/api/validate-token/')
-def validate_jwt():
+@app.route('/api/get-booking-data/')
+def get_booking_data():
+    json_token = request.json['jwt'][4:]
+    master_id = request.json['master_id']
+    try:
+        user = decode_token(json_token)
+        master = DbHandler.UserHandler.get_user(DbHandler.MasterHandler.get_master(master_id).user_id)
+
+        if user != None:
+            return make_response({"first_name" : user.first_name,
+                    "last_name" : user.last_name,
+                    "master" : f"{master.first_name} {master.last_name}"}, 
+                    200
+            )
+        else:
+            return make_response(
+                'Нет доступа',
+                401
+            )
+    except:
+        return make_response(
+            'Некорректный токен',
+            400
+        )
+
+@app.route('/api/is-admin/')
+def is_admin():
     admins = [1]
     json_token = request.json['jwt'][4:]
 
     try:
         js = jwt.decode(json_token, app.config['SECRET_KEY'], algorithms = 'HS256')
-        if js['public_id'] in admins:
+        if js['id'] in admins:
             return make_response(
                 'admin',
                 200
@@ -134,7 +163,7 @@ def validate_jwt():
                 'Нет доступа',
                 401
             )
-    except:
+    except:  
         return make_response(
             'Некорректный токен',
             400

@@ -11,6 +11,10 @@ class DbHandler:
             return db.session.query(UserDb).get(id)
         
         @staticmethod
+        def get_users():
+            return db.session.query(UserDb).all()
+        
+        @staticmethod
         def get_user_by_email(email: str):
             return db.session.query(UserDb).filter(UserDb.email == email).first()
         
@@ -30,6 +34,12 @@ class DbHandler:
             db.session.commit()
 
     class MasterHandler:
+
+        @staticmethod
+        def contains(user_id):
+            potential_master = db.session.query(MasterDb).filter(MasterDb.user_id == user_id).first()
+            return potential_master != None
+
         @staticmethod
         def get_master(master_id: int) -> MasterDb:
             a = db.session.query(MasterDb).get(master_id)
@@ -59,5 +69,9 @@ class DbHandler:
         def delete_master(user_id: int):
             master = MasterDb.query.filter(user_id == MasterDb.user_id).first()
 
+            master_id = master.master_id
+
             db.session.delete(master)
             db.session.commit()
+
+            return master_id

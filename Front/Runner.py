@@ -150,7 +150,7 @@ def change_status():
 @app.route('/api/validate/', methods = ['POST'])
 def validate():
     jwt =request.json['jwt']
-    response = requests.get('http://127.0.0.1:2000/api/validate-token/', json={"jwt" : jwt})
+    response = requests.get('http://127.0.0.1:2000/api/is-admin/', json={"jwt" : jwt})
     if response.status_code == 200:
         return json.jsonify(200)
     else:
@@ -158,7 +158,33 @@ def validate():
     
 @app.route('/booking/<int:slot_id>/')
 def view_booking_page(slot_id: int):
+
     return render_template('booking.html')
+
+@app.route('/api/get-booking-data/<int:slot_id>/', methods = ['GET', 'POST'])
+def get_booking_data(slot_id: int):
+    jwt = request.json['jwt']
+
+    #найти инфу о пользователе
+    #найти инфу о мастере
+    #найти инфу о дате
+
+    
+    slot_response = requests.get(f'http://127.0.0.1:3000/api/get-slot-data/{slot_id}')
+    slot = slot_response.json()
+    booking_data = requests.get('http://127.0.0.1:2000/api/get-booking-data/', json = {"jwt" : jwt, "master_id" : slot['master_id']})
+    data = booking_data.json()
+
+    if booking_data.status_code == 200:
+        user_data = booking_data.json()
+    return {
+        "firstName" : data['first_name'],
+        "lastName" : data['last_name'],
+        "masterName" : data['master'],
+        "address" : slot['location'],
+        "time" : slot["time"],
+        "price" : 200
+    }
 
 if __name__ == '__main__':
     app.run(debug = True, port = 4000)

@@ -42,7 +42,8 @@ def create_master():
 def create_slots():
     try:
         master_id = request.json['master_id']
-        DbHandler.SlotHandler.add_slots(master_id)
+        location_id = request.json['location_id']
+        DbHandler.SlotHandler.add_slots(master_id, location_id)
         return make_response(
             'Слоты созданы',
             200
@@ -59,7 +60,7 @@ def delete_slots():
         master_id = request.json['master_id']
         DbHandler.SlotHandler.delete_slots(master_id)
         return make_response(
-            'Слоты созданы',
+            'Слоты удалены',
             200
             )
     except:
@@ -81,6 +82,19 @@ def get_master_slots():
         masters.append(DbHandler.SlotHandler.get_master_slots(person, dt))
 
     return masters
+
+@app.route('/api/get-slot-data/<int:slot_id>')
+def get_slot_data(slot_id: int):
+    slot = DbHandler.SlotHandler.get_slot(slot_id)
+    location = DbHandler.LocationDbHandler.get_location(slot.location_id)
+    string = "{0:02d}:{1:02d} {2:02d}.{3:02d}.{4}".format(slot.time.hour, slot.time.minute, slot.time.day, slot.time.month, slot.time.year)
+    return {
+        "location" : location.address,
+        "master_id" : slot.master_id,
+        "time" : string
+    }
+
+    
 
 @app.route('/api/get-dt/')
 def get_dt():

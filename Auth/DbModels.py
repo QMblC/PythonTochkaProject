@@ -21,7 +21,6 @@ class UserDb(db.Model, UserMixin):
 	    return '<UserDb %r>' % self.id
     
 class MasterDb(db.Model):
-
     
     master_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     user_id = db.Column(db.Integer, nullable = False)

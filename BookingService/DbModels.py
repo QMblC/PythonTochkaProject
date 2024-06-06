@@ -7,15 +7,6 @@ class LocationDb(db.Model):
     def __repr__(self) -> str:
         return '<Location %r>' % self.id
     
-class MasterDb(db.Model):
-    id = db.Column(db.Integer, primary_key = True, autoincrement=True)
-    location_id = db.Column(db.Integer, nullable = False)
-    first_name = db.Column(db.String(50), nullable = False)
-    last_name = db.Column(db.String(50), nullable = False)
-
-    def __repr__(self):
-        return '<Master %r>' % self.id
-    
 class SlotDb(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     master_id = db.Column(db.Integer, nullable = False)
