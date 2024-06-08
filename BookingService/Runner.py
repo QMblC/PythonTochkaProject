@@ -4,6 +4,7 @@ from DbHandler import DbHandler
 from TimeHandler import TimeHandler
 import requests
 from datetime import datetime, timezone
+from cloudipsp import Api, Checkout
 
 @app.route('/api/create-location/', methods = ['POST'])
 def create_location():
@@ -30,13 +31,6 @@ def get_next_two_weeks():
             break
 
     return days
-
-@app.route('/api/create-master/', methods = ['POST'])
-def create_master():
-    
-    DbHandler.MasterHandler.add_master(request.json["first_name"], request.json["last_name"], request.json["location_id"])
-
-    return "a"
 
 @app.route('/api/create-clots/', methods = ['POST'])
 def create_slots():
