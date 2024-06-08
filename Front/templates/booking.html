@@ -17,48 +17,21 @@
             <p id = "address"></p>
             <p id = "time"></p>
             <p id = "price"></p><br>
-            <button>Перейти к оплате</button>
+            <button onclick="payment()">Перейти к оплате</button>
         </div>
     </main>
     <footer>
         
     </footer>
 </body>
-
+<script src ="/static/js/header.js"></script>
 <script>
-async function function1() {
-    var ul = document.getElementById("header");
-    var li = document.createElement("li");
 
-    if (!document.cookie.includes("jwt")) {
-        
-        li.innerHTML = `<a href="/login/">Вход</a>`;
-        ul.appendChild(li);
-    }
-    else{
-        li.innerHTML = `
-        <a href="javascript:logout();">Выйти</a>
-        `;
-        ul.appendChild(li);
-    }
-}
+function payment(){
+    const splittedHref = window.location.href.split('/');
+    const slot_id = splittedHref[splittedHref.length - 2];
 
-function logout(){
-    let newCookie = "";
-    let split = document.cookie.split(';');
-    for(var i = 0; i < split.length; i++){
-        console.log(newCookie);
-        if (split[i].includes("jwt=")){
-            newCookie += split[i] + ";max-age=-1;";
-        }
-        else{
-            newCookie += split[i];
-        }
-    }
-    document.cookie = newCookie;
-    console.log(document.cookie);
-
-    location.reload()
+    window.location.replace(`/payment/${slot_id}/`)
 }
 
 async function writeUserData(){
@@ -71,18 +44,17 @@ async function writeUserData(){
 
     const splittedHref = window.location.href.split('/');
     const slot_id = splittedHref[splittedHref.length - 2];
+
     const d = {
             method: "POST",
             headers: { "Content-Type": "application/json"},
             body: JSON.stringify({"jwt" : document.cookie}),
         };
     
-    console.log(document.cookie)
 
     data = await fetch(`/api/get-booking-data/${slot_id}`, d).then(
         (response) => response.json()
     );
-    console.log(2)
 
     userFirstName.value = data["firstName"]
     userLastName.value = data["lastName"]
@@ -95,7 +67,7 @@ async function writeUserData(){
 
 function checkJwt(){
     if (!document.cookie.includes("jwt")) {
-        window.location.replace('/addresses/')
+        window.location.replace('/login/')
     }
 }
 </script>

@@ -30,7 +30,7 @@
     async function login(){
         const email = document.querySelector("#email").value;
         const password = document.querySelector("#password").value;
-        const rememer =document.querySelector("#remember").value
+        const rememer = document.querySelector("#remember").value
         
         if (!email || !password){
             document.getElementById("errors").innerHTML = "Введите данные"
@@ -48,7 +48,7 @@
 
         if (jwt.split('.').length == 3){
             if (rememer){
-                document.cookie = `jwt=${jwt};path=/;max-age=1800`;
+                document.cookie = `jwt=${jwt};max-age=86400;path=/;`;
             }
             else{
                 document.cookie = `jwt=${jwt};path=/`

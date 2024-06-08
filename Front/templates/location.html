@@ -23,7 +23,13 @@
             {% for master in masters %}
                 <tr><th>{{ master[0]['first_name'] + " " + master[0]['last_name'] }}</th>
                     {% for slot in master[1] %}
-                    <th><a href="/booking/{{slot['id']}}">{{slot['type']}}</a></th>
+                        {% if slot['type'] == "Свободно" %}
+                            <th><a href="/booking/{{slot['id']}}">{{slot['type']}}</a></th>
+                        {% elif slot['type'] == "Забронировано" %}
+                            <th><a href="/slot-info/{{slot['id']}}">{{slot['type']}}</a></th>
+                        {% else %}
+                            <th><p>{{slot['type']}}</p></th>
+                        {% endif %}
                     {% endfor %}
                 </tr>
             {% endfor %}
@@ -33,25 +39,8 @@
 
     </footer>
 </body>
-<script>
-    async function function1() {
-    var ul = document.getElementById("header");
-    var li = document.createElement("li");
+<script src = "/static/js/header.js">
 
-    console.log(document.cookie)
-
-    if (!document.cookie.includes("jwt")) {
-        
-        li.innerHTML = `<a href="/login/">Вход</a>`;
-        ul.appendChild(li);
-    }
-    else{
-        li.innerHTML = `
-        <a href="/logout/">Выйти</a>
-        `;
-        ul.appendChild(li);
-    }
-}
 </script>
 </html>
 

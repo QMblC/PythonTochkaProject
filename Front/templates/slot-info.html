@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <title>Сервис бронирования</title>
+</head>
+<body onload="function1(); write_data(); checkJwt()">
+
+    {% include 'header.html' %} 
+    
+    <main>
+        <p id = "masterName"></p>
+        <p id = "userName"></p>
+        <p id = "time"></p>
+        
+    </main>
+    <footer>
+
+    </footer>
+</body>
+<script src="/static/js/header.js"></script>
+<script>
+async function write_data(){
+    const masterName = document.querySelector("#masterName");
+    const userName = document.querySelector("#userName");
+    const time = document.querySelector("#time");
+
+    const splittedHref = window.location.href.split('/');
+    const slot_id = splittedHref[splittedHref.length - 2];
+
+    const d = {
+            method: "POST",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({"jwt" : document.cookie}),
+        };
+
+    const response = await fetch(`/api/get-slot-info/${slot_id}`, d)
+
+    if (response.status == 200){
+        const data = await response.json()
+        masterName.textContent = data['master']
+        userName.textContent = `${data['firstName']} ${data['lastName']}`
+        time.textContent = data['time']
+    }
+    else{
+        masterName.textContent = "Нет доступа"
+    }
+
+    
+
+
+}
+
+function checkJwt(){
+    if (!document.cookie.includes("jwt")) {
+        window.location.replace('/login/')
+    }
+}
+</script>
+</html>
+

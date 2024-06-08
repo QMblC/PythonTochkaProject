@@ -3,10 +3,10 @@ import jwt, requests
 from datetime import datetime, timedelta, timezone
 
 from DbHandler import DbHandler
+from DbModels import *
 from App import app
 
-#Проверять наличие почты
-
+#Проверять на админ или booked_by
 @app.route('/api/login/', methods = ['GET', 'POST'])
 def login():
     
@@ -49,6 +49,18 @@ def register():
             'Указанная почта уже используется',
             400
         )
+
+    if email == app.config['ADMIN_LOGIN']:
+        DbHandler.UserHandler.create_user(first_name, last_name, email, password)
+        user = DbHandler.UserHandler.get_user_by_email(email)
+        token = jwt.encode({
+            'id': user.id,
+            'exp' : datetime.now(timezone.utc) + timedelta(minutes = 30)
+        }, app.config['SECRET_KEY'], algorithm = 'HS256')
+    
+        decoded = jwt.decode(token, key = app.config['SECRET_KEY'], algorithms = 'HS256')
+        DbHandler.AdminHandler.create_admin(user.id)
+        return json.jsonify(token)
 
     DbHandler.UserHandler.create_user(first_name, last_name, email, password)
     user = DbHandler.UserHandler.get_user_by_email(email)
@@ -96,11 +108,11 @@ def change_user_status():
 
     elif new_status == 'user':
 
-        master_id = DbHandler.MasterHandler.delete_master(user_id)#Удалить слоты
+        master_id = DbHandler.MasterHandler.delete_master(user_id)
         requests.delete('http://127.0.0.1:3000/api/delete-slots/', json = {"master_id" : master_id})
 
     elif new_status == 'admin':
-        pass
+        DbHandler.AdminHandler.create_admin(user_id)
 
 @app.route('/api/get-masters/<int:location_id>')
 def get_masters(location_id: int):
@@ -116,12 +128,12 @@ def get_masters(location_id: int):
 
     return users
 
-def decode_token(json_token: str):
+def decode_token(json_token: str) -> UserDb:
     js = jwt.decode(json_token, app.config['SECRET_KEY'], algorithms = 'HS256')
     user = DbHandler.UserHandler.get_user(int(js['id']))
     return user
 
-@app.route('/api/get-booking-data/')
+@app.route('/api/get-booking-data/')#Fix??
 def get_booking_data():
     json_token = request.json['jwt'][4:]
     master_id = request.json['master_id']
@@ -129,10 +141,11 @@ def get_booking_data():
         user = decode_token(json_token)
         master = DbHandler.UserHandler.get_user(DbHandler.MasterHandler.get_master(master_id).user_id)
 
+        response_data = user.toJSON()
+        response_data['master'] = f"{master.first_name} {master.last_name}"
+
         if user != None:
-            return make_response({"first_name" : user.first_name,
-                    "last_name" : user.last_name,
-                    "master" : f"{master.first_name} {master.last_name}"}, 
+            return make_response(response_data, 
                     200
             )
         else:
@@ -146,9 +159,39 @@ def get_booking_data():
             400
         )
 
+def get_slot_user():
+    json_token = request.json['jwt'][4:]
+    try:
+        user_json = decode_token(json_token).toJSON()
+
+        master = DbHandler.UserHandler.get_user(DbHandler.MasterHandler.get_master(request.json['master_id']).user_id)
+
+        user_json['master'] = f"{master.first_name} {master.last_name}"        
+
+        return user_json
+    except:
+        return make_response(
+            'Некорректный токен',
+            400
+        )
+
+
+    
+@app.route('/api/get-user-data/')
+def get_jwt_user_data():
+    json_token = request.json['jwt'][4:]
+    try:
+        user = decode_token(json_token).toJSON()
+        return user
+    except:
+        return make_response(
+            'Некорректный токен',
+            400
+        )
+
 @app.route('/api/is-admin/')
 def is_admin():
-    admins = [1]
+    admins = [admin.user_id for admin in DbHandler.AdminHandler.get_admins()]
     json_token = request.json['jwt'][4:]
 
     try:

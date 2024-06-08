@@ -16,9 +16,17 @@ class UserDb(db.Model, UserMixin):
 
     def is_password_correct(self, password):
          return check_password_hash(self.password, password)
+    
+    def toJSON(self):
+        return {"first_name" : self.first_name,
+                "last_name" : self.last_name,
+                "id" : self.id,
+                "email" : self.email}
 
     def __repr__(self):
 	    return '<UserDb %r>' % self.id
+    
+    
     
 class MasterDb(db.Model):
     

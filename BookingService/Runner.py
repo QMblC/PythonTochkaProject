@@ -71,17 +71,24 @@ def delete_slots():
 
 @app.route('/api/get-slots/', methods = ['POST', 'GET'])
 def get_master_slots():
+    
     js = request.json
     dt = datetime(js["year"], js["month"], js["day"], js["hour"], js["minute"], js["second"])
 
     masters = []
 
     people = js['masters']
+    if len(people) > 0:
+
+        DbHandler.SlotHandler.upgrade_time()
 
     for person in people:
         masters.append(DbHandler.SlotHandler.get_master_slots(person, dt))
 
     return masters
+
+def upgrade_slots(dt: datetime):
+    pass
 
 @app.route('/api/get-slot-data/<int:slot_id>')
 def get_slot_data(slot_id: int):
@@ -91,6 +98,7 @@ def get_slot_data(slot_id: int):
     return {
         "location" : location.address,
         "master_id" : slot.master_id,
+        "booked_by" : slot.booked_by,
         "time" : string
     }
 
@@ -105,6 +113,23 @@ def get_dt():
         "hour" : dt.hour,
         "minute" : dt.minute,
         "second" : dt.second}
+
+@app.route('/api/book/<int:slot_id>', methods = ['GET','POST'])
+def book_slot(slot_id: int):
+    jwt = request.json['jwt']
+    user_data_response = requests.get('http://127.0.0.1:2000/api/get-user-data/', json={'jwt' : jwt})
+    user_data = user_data_response.json()
+    slot = DbHandler.SlotHandler.get_slot(slot_id)
+
+    slot.slot_type = "Забронировано"
+    slot.booked_by = f"{user_data['first_name']} {user_data['last_name']} {user_data['id']}"
+
+    DbHandler.SlotHandler.upgrade_slot(slot)
+
+    return make_response(
+        "OK",
+        200
+    )
 
 if __name__ == '__main__':
     app.run(debug = True, port = 3000)

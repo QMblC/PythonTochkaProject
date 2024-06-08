@@ -58,6 +58,21 @@ class DbHandler:
         @staticmethod
         def get_slot(slot_id: int) -> SlotDb:
             return db.session.query(SlotDb).get(slot_id)        
+        
+        @staticmethod
+        def upgrade_slot(slot: SlotDb):
+            db.session.add(slot)
+            db.session.commit()
+
+        @staticmethod
+        def upgrade_time() -> None:
+            dt = datetime.now()
+            slots = db.session.query(SlotDb).filter(SlotDb.time <= dt).filter(SlotDb.slot_type == 'Свободно').all()
+            for slot in slots:
+                slot.slot_type = "Недоступно"
+                db.session.add(slot)
+            db.session.commit()
+            pass
 
         @staticmethod
         def add_slots(master_id: int, location_id: int):

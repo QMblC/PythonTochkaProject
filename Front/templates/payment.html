@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <title>Сервис бронирования</title>
+</head>
+<body onload="function1(); checkJwt()">
+
+    {% include 'header.html' %} 
+    
+    <main>
+        <button onclick="pay()">Оплатить</button>
+    </main>
+    <footer>
+
+    </footer>
+</body>
+<script src = "/static/js/header.js"></script>
+<script>
+function pay(){
+
+    const splittedHref = window.location.href.split('/');
+    const slot_id = splittedHref[splittedHref.length - 2];
+
+    const d = {
+            method: "POST",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify({"jwt" : document.cookie}),
+        };
+
+    fetch(`/api/pay/${slot_id}`, d)
+}
+function checkJwt(){
+    if (!document.cookie.includes("jwt")) {
+        window.location.replace('/login/')
+    }
+}
+</script>
+</html>

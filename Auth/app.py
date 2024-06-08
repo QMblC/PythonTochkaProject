@@ -9,6 +9,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///auth.db'
 app.config['SQLALCHEMY_TRACK_MODIFICTATIONS'] = False
 app.secret_key = b's5DASsc@1sv$[a[c]]'
+app.config['ADMIN_LOGIN'] = "bookingS@admin.ru"
+app.config['ADMIN_PWD'] = "a1d2m3"
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)

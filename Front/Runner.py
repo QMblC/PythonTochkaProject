@@ -159,7 +159,7 @@ def validate():
 @app.route('/booking/<int:slot_id>/')
 def view_booking_page(slot_id: int):
 
-    return render_template('booking.html')
+    return render_template('booking.html', slot_id = slot_id)
 
 @app.route('/api/get-booking-data/<int:slot_id>/', methods = ['GET', 'POST'])
 def get_booking_data(slot_id: int):
@@ -173,10 +173,13 @@ def get_booking_data(slot_id: int):
     slot_response = requests.get(f'http://127.0.0.1:3000/api/get-slot-data/{slot_id}')
     slot = slot_response.json()
     booking_data = requests.get('http://127.0.0.1:2000/api/get-booking-data/', json = {"jwt" : jwt, "master_id" : slot['master_id']})
+    if booking_data.status_code != 200:
+        return make_response(
+            "Error",
+            403
+        )
     data = booking_data.json()
 
-    if booking_data.status_code == 200:
-        user_data = booking_data.json()
     return {
         "firstName" : data['first_name'],
         "lastName" : data['last_name'],
@@ -186,5 +189,44 @@ def get_booking_data(slot_id: int):
         "price" : 200
     }
 
+@app.route('/payment/<int:slot_id>/')
+def view_payment_page(slot_id: int):
+    return render_template("payment.html")
+
+@app.route('/api/pay/<int:slot_id>', methods = ['GET', 'POST'])
+def pay(slot_id: int):
+    jwt = request.json['jwt']
+    requests.post(f'http://127.0.0.1:3000/api/book/{slot_id}', json={"slot_id" : slot_id, "jwt" : jwt})
+    return redirect('/addresses/')
+
+@app.route('/slot-info/<int:slot_id>/')
+def view_slot_info_page(slot_id: int):
+    return render_template('slot-info.html')
+
+@app.route('/api/get-slot-info/<int:slot_id>', methods = ['GET', 'POST'])
+def get_slot_info(slot_id: int):
+    jwt = request.json['jwt']
+    slot_response = requests.get(f'http://127.0.0.1:3000/api/get-slot-data/{slot_id}')
+    slot = slot_response.json()
+    slot_user_data_response = requests.get('http://127.0.0.1:2000/api/get-booking-data/', json={'jwt' : jwt, "master_id" : slot['master_id'] })
+    slot_user_data = slot_user_data_response.json()
+
+    admins = [3]
+
+    if int(slot['booked_by'].split()[-1]) == slot_user_data['id'] or slot_user_data['id'] in admins:
+
+        return make_response( {
+            "firstName" : slot_user_data['first_name'],
+            "lastName" : slot_user_data['last_name'],
+            "master" : slot_user_data['master'],
+            "time" : slot['time']
+            },
+            200
+        )
+    
+    else:
+        make_response(
+            403
+        )
 if __name__ == '__main__':
     app.run(debug = True, port = 4000)

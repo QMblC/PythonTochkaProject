@@ -19,16 +19,16 @@ function logout(){
     let newCookie = "";
     let split = document.cookie.split(';');
     for(var i = 0; i < split.length; i++){
-        console.log(newCookie);
+
         if (split[i].includes("jwt=")){
             newCookie += split[i] + ";max-age=-1;";
+            
         }
         else{
             newCookie += split[i];
         }
     }
     document.cookie = newCookie;
-    console.log(document.cookie);
 
     location.reload()
 }

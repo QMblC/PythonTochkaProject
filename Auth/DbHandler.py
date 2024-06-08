@@ -7,7 +7,7 @@ class DbHandler:
     class UserHandler:
 
         @staticmethod
-        def get_user(id: int):
+        def get_user(id: int) -> UserDb:
             return db.session.query(UserDb).get(id)
         
         @staticmethod
@@ -75,3 +75,17 @@ class DbHandler:
             db.session.commit()
 
             return master_id
+        
+    class AdminHandler:
+
+        @staticmethod
+        def create_admin(user_id: int):
+            new_admin = AdminDb(user_id = user_id)
+
+            db.session.add(new_admin)
+            db.session.commit()
+
+        @staticmethod
+        def get_admins():
+            admins = db.session.query(AdminDb).all()
+            return admins
