@@ -18,9 +18,9 @@ class TimeHandler:
                 day_counter += 1
 
                 days.append((TimeHandler.get_weekday_string(day.weekday()), "{0:02d}.{1:02d}.{2}".format(day.day, day.month, day.year)))
-                if day.day != day.max.day:
+                try:
                     day = datetime(day.year, day.month, day.day + 1, day.hour, day.minute, day.second)
-                else:
+                except:
                     break
 
             day = datetime(day.year, day.month + 1, 1, day.hour, day.minute, day.second)
